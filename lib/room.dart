@@ -164,7 +164,7 @@ class RoomPage extends StatelessWidget {
   }
 
   void _showNewRoomCode(BuildContext context) async {
-    String newRoomCode = await createRoom(); // 방 생성 통신 실행
+    String newRoomCode = await createRoom();
 
     showDialog(
       context: context,
@@ -196,7 +196,7 @@ class RoomPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    newRoomCode, // 생성된 방 코드 표시
+                    newRoomCode,
                     style: const TextStyle(fontSize: 12),
                   ),
                   IconButton(
