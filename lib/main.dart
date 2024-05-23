@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gifthub_flutter/login.dart';
-import 'package:gifthub_flutter/menu_category.dart';
+import 'package:gifthub_flutter/menu/menu_category.dart';
 import 'package:provider/provider.dart';
 
 void main() {

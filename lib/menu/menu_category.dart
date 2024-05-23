@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gifthub_flutter/login.dart';
 import 'package:gifthub_flutter/main.dart';
-import 'package:gifthub_flutter/menu_detail.dart';
+import 'package:gifthub_flutter/menu/menu_detail.dart';
 import 'package:provider/provider.dart';
 
 void main() {

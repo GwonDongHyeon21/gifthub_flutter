@@ -1,5 +1,7 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
-import 'package:gifthub_flutter/OCR.dart';
+import 'package:gifthub_flutter/menu/ocr.dart';
 import 'package:image_picker/image_picker.dart';
 
 void main() {
@@ -35,7 +37,6 @@ class MenuDetail extends StatelessWidget {
               final pickedFile =
                   await ImagePicker().pickImage(source: ImageSource.gallery);
               if (pickedFile != null) {
-                // ignore: use_build_context_synchronously
                 showDialog(
                   context: context,
                   builder: (BuildContext context) {
