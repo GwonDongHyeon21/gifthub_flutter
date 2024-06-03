@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously, avoid_print
 
 import 'package:flutter/material.dart';
+import 'package:gifthub_flutter/menu/menu_category.dart';
 import 'package:gifthub_flutter/room/room_enter.dart';
 import 'package:gifthub_flutter/room/room_create.dart';
 
@@ -70,7 +71,7 @@ class RoomPage extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 60),
               child: ElevatedButton(
                   onPressed: () {
-                    handleCreateRoom(context);
+                    showNewRoomCode(context);
                   },
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size(250, 70),

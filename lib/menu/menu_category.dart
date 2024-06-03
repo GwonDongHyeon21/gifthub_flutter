@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:gifthub_flutter/login.dart';
-import 'package:gifthub_flutter/main.dart';
 import 'package:gifthub_flutter/menu/menu_detail.dart';
-import 'package:provider/provider.dart';
+import 'package:gifthub_flutter/room/room_settings.dart';
 
 void main() {
   runApp(const MaterialApp(
@@ -13,6 +11,36 @@ void main() {
     ),
   ));
 }
+
+/*
+Future<List<dynamic>> fetchCategories(int roomId) async {
+  final url = Uri.parse('https://api.gifthub.site/room/main/$roomId');
+
+  final headers = {
+    'Content-Type': 'application/json',
+    'Authorization':
+        'eyJhbGciOiJIUzI1NiJ9.eyJpZGVudGlmaWVyIjoiYXBwbGUwMDE5MTQuNWFjN2ExODgyZmMzNGM5ODlmNWM5NjNhZGEzYmIwNzcuMTQwMCIsImlhdCI6MTcxNjkxODYzMiwiZXhwIjoxNzE2OTIyMjMyfQ.70zbeysGO0Gfo94PyPDhw-p96ff2S69kRlUuGrw4YhE',
+  };
+
+  try {
+    final response = await http.get(url, headers: headers);
+    final utf8Body = utf8.decode(response.bodyBytes);
+
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(utf8Body);
+      if (decoded is List) {
+        return decoded;
+      } else {
+        throw Exception('Expected a list but got ${decoded.runtimeType}');
+      }
+    } else {
+      throw Exception('Failed to load categories');
+    }
+  } catch (e) {
+    throw Exception('Failed to load categories: $e');
+  }
+}
+*/
 
 class MenuCategory extends StatelessWidget {
   const MenuCategory({Key? key, required this.roomCode}) : super(key: key);
@@ -123,141 +151,6 @@ class MenuCategory extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class Settings extends StatelessWidget {
-  const Settings({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        title: const Text('설정'),
-      ),
-      body: Column(mainAxisAlignment: MainAxisAlignment.start, children: [
-        SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                //실행
-              },
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.black,
-                backgroundColor: Colors.white,
-              ),
-              child: const Text('내가 만든 방 코드 보기'),
-            )),
-        const SizedBox(
-          height: 5,
-        ),
-        SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                //실행
-              },
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.black,
-                backgroundColor: Colors.white,
-              ),
-              child: const Text('현재 방 참여자 보기'),
-            )),
-        const SizedBox(
-          height: 5,
-        ),
-        SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                //실행
-              },
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.black,
-                backgroundColor: Colors.white,
-              ),
-              child: const Text('방 나가기'),
-            )),
-        const SizedBox(
-          height: 5,
-        ),
-        SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                //실행
-              },
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.black,
-                backgroundColor: Colors.white,
-              ),
-              child: const Text('회원탈퇴'),
-            )),
-        const SizedBox(
-          height: 5,
-        ),
-        SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                _showLogoutDialog(context);
-              },
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.black,
-                backgroundColor: Colors.white,
-              ),
-              child: const Text('로그아웃'),
-            )),
-      ]),
-    );
-  }
-
-  Future<void> _showLogoutDialog(BuildContext context) async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('로그아웃'),
-          content: const SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text('로그아웃 하시겠습니까?'),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('취소'),
-            ),
-            TextButton(
-              onPressed: () {
-                Provider.of<AuthProvider>(context, listen: false)
-                    .setLoggedIn(false);
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const LoginPage()),
-                  (Route<dynamic> route) => false,
-                );
-              },
-              child: const Text('로그아웃'),
-            ),
-          ],
-        );
-      },
     );
   }
 }

@@ -45,8 +45,8 @@ void showInputRoomCode(BuildContext context) {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const MenuCategory(
-                              roomCode: '',
+                        builder: (context) => MenuCategory(
+                              roomCode: roomCodeController.text,
                             )),
                   );
                 }
@@ -71,9 +71,9 @@ Future<int> enterRoom(String roomCode) async {
   final response = await http.post(
     url,
     headers: <String, String>{
-      'Content-Type': 'application/json',
       'Authorization':
           'eyJhbGciOiJIUzI1NiJ9.eyJpZGVudGlmaWVyIjoiZ29vZ2xlMTA2MzIwODUzMTUxNzc4MDE5MzM5IiwiaWF0IjoxNzE2Mjk0MDM5LCJleHAiOjE3MTYyOTc2Mzl9.k3k39T3i434qQsxX-f7DH-PKr9Gq2k4kINYl6uOSg9k',
+      'Content-Type': 'application/json',
     },
     body: jsonEncode(<String, String>{
       'code': roomCode,

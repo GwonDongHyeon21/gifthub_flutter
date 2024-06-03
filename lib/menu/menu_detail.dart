@@ -1,8 +1,10 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:gifthub_flutter/menu/ocr.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const MaterialApp(
@@ -12,12 +14,52 @@ void main() {
   ));
 }
 
-class MenuDetail extends StatelessWidget {
+class MenuDetail extends StatefulWidget {
   final String roomCode;
   final String title;
 
   const MenuDetail({Key? key, required this.roomCode, required this.title})
       : super(key: key);
+
+  @override
+  // ignore: library_private_types_in_public_api
+  _MenuDetailState createState() => _MenuDetailState();
+}
+
+class _MenuDetailState extends State<MenuDetail> {
+  late List<String> imageUrls = [];
+  bool isLoading = false;
+  String? selectedImageUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchImageUrls();
+  }
+
+  Future<void> fetchImageUrls() async {
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      final response = await http
+          .get(Uri.parse('https://api.gifthub.site/room/1/categories/2'));
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        setState(() {
+          imageUrls = data.map((item) => item['url']).cast<String>().toList();
+          isLoading = false;
+        });
+      } else {
+        throw Exception('Failed to load images: ${response.statusCode}');
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      throw Exception('Failed to load images: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,46 +101,98 @@ class MenuDetail extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Padding(
-              padding: const EdgeInsets.only(left: 25, top: 5),
-              child: Row(children: [
+            padding: const EdgeInsets.only(left: 25, top: 5),
+            child: Row(
+              children: [
                 Text(
-                  title,
+                  widget.title,
                   style: const TextStyle(
                       fontSize: 30, fontWeight: FontWeight.bold),
                 )
-              ])),
+              ],
+            ),
+          ),
           const Padding(
-              padding: EdgeInsets.only(left: 15, top: 5),
-              child: Row(children: [
+            padding: EdgeInsets.only(left: 15, top: 5),
+            child: Row(
+              children: [
                 Text(
                   '유효기간 임박순입니다.',
                   style:
                       TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
                 )
-              ])),
-          Expanded(
-            //
-            // 카테고리에 해당하는 이미지들 불러오기
-            //
-            child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-              ),
-              itemCount: 20, //전체 이미지수 count해서 삽입
-              itemBuilder: (BuildContext context, int index) {
-                return Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: ElevatedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.arrow_back), //폴더에 imgae 추가하여 삽입
-                    label: Text('이미지 ${index + 1}'),
-                  ),
-                );
-              },
+              ],
             ),
+          ),
+          Expanded(
+            child: isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : imageUrls.isNotEmpty
+                    ? GridView.builder(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                        ),
+                        itemCount: imageUrls.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _showImageDialog(imageUrls[index]);
+                              });
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: AspectRatio(
+                                aspectRatio: 3 / 12,
+                                child: Image.network(
+                                  imageUrls[index],
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      )
+                    : const Center(
+                        child: Text('No images found'),
+                      ),
           ),
         ],
       ),
+    );
+  }
+
+  void _showImageDialog(String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: GestureDetector(
+            onHorizontalDragEnd: (details) {
+              if (details.primaryVelocity! > 0) {
+                // Swipe right, delete the image
+                setState(() {
+                  imageUrls.remove(imageUrl);
+                });
+                Navigator.of(context).pop();
+              }
+            },
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: NetworkImage(imageUrl),
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, use_build_context_synchronously, library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'dart:io';
@@ -9,12 +11,11 @@ class OCR extends StatefulWidget {
   const OCR({Key? key, required this.imagePath}) : super(key: key);
 
   @override
-  // ignore: library_private_types_in_public_api
   _OCRState createState() => _OCRState();
 }
 
 class _OCRState extends State<OCR> {
-  String parsedtext = '';
+  String parsedText = '';
   String parsedNumber = '';
   bool isParsing = true;
 
@@ -45,9 +46,9 @@ class _OCRState extends State<OCR> {
       var extractedText =
           dataRegExp.stringMatch(result['ParsedResults'][0]['ParsedText']);
       if (extractedText != null) {
-        parsedtext = extractedText;
+        parsedText = extractedText;
       } else {
-        parsedtext = '';
+        parsedText = '';
       }
       isParsing = false;
     });
@@ -109,7 +110,7 @@ class _OCRState extends State<OCR> {
                                 color: Colors.black.withOpacity(0.5)),
                           )
                         ])
-                      : parsedtext.isNotEmpty
+                      : parsedText.isNotEmpty
                           ? Column(children: [
                               const SizedBox(
                                 height: 5,
@@ -124,7 +125,7 @@ class _OCRState extends State<OCR> {
                                 height: 5,
                               ),
                               Text(
-                                "유효기간 : $parsedtext",
+                                "유효기간 : $parsedText",
                                 style: const TextStyle(
                                   fontSize: 16,
                                 ),
@@ -154,10 +155,12 @@ class _OCRState extends State<OCR> {
                               foregroundColor: Colors.black,
                               backgroundColor: Colors.grey.withOpacity(0.5)),
                           child: const Text('텍스트 추출 중...'))
-                      : parsedtext.isNotEmpty
+                      : parsedText.isNotEmpty
                           ? ElevatedButton(
-                              onPressed: () {
-                                //데이터베이스에 등록(바코드, 유효기간)
+                              onPressed: () async {
+                                await uploadImage(File(widget.imagePath),
+                                    parsedNumber, parsedText);
+                                Navigator.pop(context);
                               },
                               style: ElevatedButton.styleFrom(
                                   foregroundColor: Colors.black,
@@ -177,5 +180,24 @@ class _OCRState extends State<OCR> {
         ),
       ),
     );
+  }
+
+  Future<void> uploadImage(
+      File imageFile, String barcode, String expireDate) async {
+    var request = http.MultipartRequest(
+        'POST', Uri.parse('https://api.gifthub.site/room/1/categories/2'));
+    request.files
+        .add(await http.MultipartFile.fromPath('image', imageFile.path));
+    request.fields['imageOcrDTO'] = jsonEncode({
+      "barcode": barcode,
+      "expire": expireDate,
+    });
+
+    var res = await request.send();
+    if (res.statusCode == 200) {
+      print('Uploaded successfully');
+    } else {
+      print('Upload failed with status: ${res.statusCode}');
+    }
   }
 }
