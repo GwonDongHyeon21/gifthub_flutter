@@ -4,12 +4,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gifthub_flutter/login/login.dart';
-import 'package:gifthub_flutter/main.dart';
-import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 
 class Settings extends StatelessWidget {
-  const Settings({super.key});
+  const Settings({super.key, required this.roomId});
+
+  final String roomId;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +32,7 @@ class Settings extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () async {
-                final myRoomCode = await fetchMyRoomCode(2); // 방 ID 입력
+                final myRoomCode = await fetchMyRoomCode(roomId);
                 if (myRoomCode != null) {
                   showDialog(
                     context: context,
@@ -57,7 +57,7 @@ class Settings extends StatelessWidget {
                         children: [
                           Text(
                             myRoomCode,
-                            style: const TextStyle(fontSize: 12),
+                            style: const TextStyle(fontSize: 14),
                           ),
                           IconButton(
                             onPressed: () {
@@ -70,7 +70,7 @@ class Settings extends StatelessWidget {
                                   ),
                                   backgroundColor: Colors.white,
                                   behavior: SnackBarBehavior.floating,
-                                  duration: Duration(seconds: 2),
+                                  duration: Duration(seconds: 1),
                                 ),
                               );
                             },
@@ -86,7 +86,7 @@ class Settings extends StatelessWidget {
                       content: Text('방 코드를 가져오는 데 실패했습니다.'),
                       backgroundColor: Colors.white,
                       behavior: SnackBarBehavior.floating,
-                      duration: Duration(seconds: 3),
+                      duration: Duration(seconds: 1),
                     ),
                   );
                 }
@@ -104,7 +104,7 @@ class Settings extends StatelessWidget {
           width: double.infinity,
           child: ElevatedButton(
             onPressed: () async {
-              final users = await showUsers(2); // 방 ID 입력
+              final users = await showUsers(roomId);
               if (users != null) {
                 showDialog(
                   context: context,
@@ -139,7 +139,7 @@ class Settings extends StatelessWidget {
                     content: Text('방 참여자 정보를 가져오는 데 실패했습니다.'),
                     backgroundColor: Colors.white,
                     behavior: SnackBarBehavior.floating,
-                    duration: Duration(seconds: 3),
+                    duration: Duration(seconds: 1),
                   ),
                 );
               }
@@ -174,7 +174,7 @@ class Settings extends StatelessWidget {
                                 onPressed: () => Navigator.of(context).pop(),
                                 child: const Text('취소')),
                             TextButton(
-                                onPressed: () => exitRoom(2), // 방 ID 입력
+                                onPressed: () => exitRoom(roomId),
                                 child: const Text('확인')),
                           ],
                         ),
@@ -223,7 +223,7 @@ class Settings extends StatelessWidget {
     );
   }
 
-  Future<String?> fetchMyRoomCode(int roomId) async {
+  Future<String?> fetchMyRoomCode(String roomId) async {
     final url = Uri.parse('https://api.gifthub.site/room/$roomId/share');
     final response = await http.get(url);
 
@@ -234,7 +234,7 @@ class Settings extends StatelessWidget {
     }
   }
 
-  Future<List<String>?> showUsers(int roomId) async {
+  Future<List<String>?> showUsers(String roomId) async {
     final url = Uri.parse('https://api.gifthub.site/room/$roomId/users');
     final response = await http.get(url);
 
@@ -248,7 +248,7 @@ class Settings extends StatelessWidget {
     }
   }
 
-  Future<bool> exitRoom(int roomId) async {
+  Future<bool> exitRoom(String roomId) async {
     final url = Uri.parse('https://api.gifthub.site/room/exit/$roomId');
 
     final response = await http.post(
@@ -291,8 +291,6 @@ class Settings extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
-                Provider.of<AuthProvider>(context, listen: false)
-                    .setLoggedIn(false);
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (context) => const LoginPage()),
                   (Route<dynamic> route) => false,

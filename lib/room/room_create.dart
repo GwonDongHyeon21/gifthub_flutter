@@ -1,22 +1,26 @@
 // ignore_for_file: avoid_print, library_private_types_in_public_api, use_build_context_synchronously
 
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gifthub_flutter/menu/menu_category.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 
-void showNewRoomCode(BuildContext context) {
+void showNewRoomCode(BuildContext context, String accessToken) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
-      return const CreateRoomDialog();
+      return CreateRoomDialog(
+        accessToken: accessToken,
+      );
     },
   );
 }
 
 class CreateRoomDialog extends StatefulWidget {
-  const CreateRoomDialog({super.key});
+  const CreateRoomDialog({super.key, required this.accessToken});
+
+  final String accessToken;
 
   @override
   _CreateRoomDialogState createState() => _CreateRoomDialogState();
@@ -24,52 +28,8 @@ class CreateRoomDialog extends StatefulWidget {
 
 class _CreateRoomDialogState extends State<CreateRoomDialog> {
   final TextEditingController titleController = TextEditingController();
-  String? roomCode;
+  String? roomId;
   bool isRoomCreated = false;
-
-  void createRoom() async {
-    final newRoomCode = await _createRoom(titleController.text);
-    if (newRoomCode.isNotEmpty) {
-      setState(() {
-        roomCode = newRoomCode;
-        isRoomCreated = true;
-      });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('방 생성에 실패했습니다.', style: TextStyle(color: Colors.black),),
-          backgroundColor: Colors.white,
-          behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 1),
-        ),
-      );
-    }
-  }
-
-  Future<String> _createRoom(String title) async {
-    final url = Uri.parse('https://api.gifthub.site/room/create');
-    final response = await http.post(
-      url,
-      headers: <String, String>{
-        'Authorization':
-            'eyJhbGciOiJIUzI1NiJ9.eyJpZGVudGlmaWVyIjoiZ29vZ2xlMTA2MzIwODUzMTUxNzc4MDE5MzM5IiwiaWF0IjoxNzE2Mjk0MDM5LCJleHAiOjE3MTYyOTc2Mzl9.k3k39T3i434qQsxX-f7DH-PKr9Gq2k4kINYl6uOSg9k',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode(<String, String>{
-        'title': title,
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      // 방 생성 성공 시
-      Map<String, dynamic> responseData = jsonDecode(response.body);
-      return responseData['roomCode'];
-    } else {
-      // 방 생성 실패 시
-      print('방 생성 실패. 오류 코드: ${response.statusCode}');
-      return '';
-    }
-  }
 
   void _copyToClipboard(String roomCode) {
     Clipboard.setData(ClipboardData(text: roomCode));
@@ -96,7 +56,7 @@ class _CreateRoomDialogState extends State<CreateRoomDialog> {
               ),
             ],
           ),
-          if (roomCode != null)
+          if (roomId != null)
             Column(
               children: [
                 const Text(
@@ -107,12 +67,12 @@ class _CreateRoomDialogState extends State<CreateRoomDialog> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      roomCode!,
+                      roomId!,
                       style: const TextStyle(fontSize: 12),
                     ),
                     IconButton(
                       onPressed: () {
-                        _copyToClipboard(roomCode!);
+                        _copyToClipboard(roomId!);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('코드가 복사되었습니다.'),
@@ -140,16 +100,7 @@ class _CreateRoomDialogState extends State<CreateRoomDialog> {
           ),
           ElevatedButton(
             onPressed: () {
-              if (isRoomCreated) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => MenuCategory(roomCode: roomCode!),
-                  ),
-                );
-              } else {
-                createRoom();
-              }
+              createRoom(titleController.text);
             },
             style: ElevatedButton.styleFrom(
               foregroundColor: Colors.black,
@@ -160,5 +111,47 @@ class _CreateRoomDialogState extends State<CreateRoomDialog> {
         ],
       ),
     );
+  }
+
+  Future<void> createRoom(String title) async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://api.gifthub.site/room/create'),
+        headers: {
+          'Authorization': widget.accessToken,
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          "title": title,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        final roomId = responseData['room_id'];
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MenuCategory(roomId: roomId!.toString()),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              '방 생성에 실패했습니다.',
+              style: TextStyle(color: Colors.black),
+            ),
+            backgroundColor: Colors.white,
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 1),
+          ),
+        );
+        print('방 생성 실패. 오류 코드: ${response.statusCode}');
+      }
+    } catch (error) {
+      print(error);
+    }
   }
 }

@@ -1,19 +1,19 @@
-// ignore_for_file: use_build_context_synchronously, avoid_print
+// ignore_for_file: use_build_context_synchronously, avoid_print, must_be_immutable
 
 import 'package:flutter/material.dart';
-import 'package:gifthub_flutter/menu/menu_category.dart';
 import 'package:gifthub_flutter/room/room_enter.dart';
 import 'package:gifthub_flutter/room/room_create.dart';
 
 void main() {
-  runApp(const RoomPage(
-    name: null,
-    email: null,
+  runApp(RoomPage(
+    accessToken: '',
   ));
 }
 
 class RoomPage extends StatelessWidget {
-  const RoomPage({super.key, required email, required name});
+  RoomPage({super.key, required this.accessToken});
+
+  String? accessToken;
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +42,7 @@ class RoomPage extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 40),
               child: ElevatedButton(
                   onPressed: () {
-                    showInputRoomCode(context);
+                    showInputRoomCode(context, accessToken!);
                   },
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size(250, 70),
@@ -70,37 +70,38 @@ class RoomPage extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: 60),
               child: ElevatedButton(
-                  onPressed: () {
-                    showNewRoomCode(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(250, 70),
-                    foregroundColor: Colors.black,
-                    backgroundColor: const Color(0xFFDBD6F3),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15.0)),
-                  ),
-                  child: const Column(
-                    children: [
-                      SizedBox(
-                        height: 5,
-                      ),
-                      Text(
-                        '방 만들기',
-                        style: TextStyle(fontSize: 18),
-                      ),
-                      SizedBox(
-                        height: 5,
-                      ),
-                      Text(
-                        '내가 제일먼저 방을 만들어 보아요',
-                        style: TextStyle(fontSize: 12),
-                      ),
-                      SizedBox(
-                        height: 5,
-                      )
-                    ],
-                  )),
+                onPressed: () {
+                  showNewRoomCode(context, accessToken!);
+                },
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(250, 70),
+                  foregroundColor: Colors.black,
+                  backgroundColor: const Color(0xFFDBD6F3),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15.0)),
+                ),
+                child: const Column(
+                  children: [
+                    SizedBox(
+                      height: 5,
+                    ),
+                    Text(
+                      '방 만들기',
+                      style: TextStyle(fontSize: 18),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    Text(
+                      '내가 제일먼저 방을 만들어 보아요',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    )
+                  ],
+                ),
+              ),
             )
           ],
         ),

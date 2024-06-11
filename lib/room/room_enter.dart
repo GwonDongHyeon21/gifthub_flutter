@@ -5,8 +5,8 @@ import 'package:gifthub_flutter/menu/menu_category.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-void showInputRoomCode(BuildContext context) {
-  final TextEditingController roomCodeController = TextEditingController();
+void showInputRoomCode(BuildContext context, String accessToken) {
+  final TextEditingController roomCode = TextEditingController();
 
   showDialog(
     context: context,
@@ -31,7 +31,7 @@ void showInputRoomCode(BuildContext context) {
               height: 8,
             ),
             TextField(
-              controller: roomCodeController,
+              controller: roomCode,
               decoration:
                   const InputDecoration(hintText: '참여하려는 방의 코드를 입력해주세요'),
             ),
@@ -39,20 +39,8 @@ void showInputRoomCode(BuildContext context) {
               height: 8,
             ),
             ElevatedButton(
-              onPressed: () async {
-                int statusNum = await enterRoom(roomCodeController.text);
-                if (statusNum == 1) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => MenuCategory(
-                              roomCode: roomCodeController.text,
-                            )),
-                  );
-                }
-                if (statusNum == 0) {
-                  _showSnackBar(context);
-                }
+              onPressed: () {
+                enterRoom(context, roomCode.text, accessToken);
               },
               style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.black,
@@ -66,29 +54,38 @@ void showInputRoomCode(BuildContext context) {
   );
 }
 
-Future<int> enterRoom(String roomCode) async {
-  final url = Uri.parse('https://api.gifthub.site/room/enter');
-  final response = await http.post(
-    url,
-    headers: <String, String>{
-      'Authorization':
-          'eyJhbGciOiJIUzI1NiJ9.eyJpZGVudGlmaWVyIjoiZ29vZ2xlMTA2MzIwODUzMTUxNzc4MDE5MzM5IiwiaWF0IjoxNzE2Mjk0MDM5LCJleHAiOjE3MTYyOTc2Mzl9.k3k39T3i434qQsxX-f7DH-PKr9Gq2k4kINYl6uOSg9k',
-      'Content-Type': 'application/json',
-    },
-    body: jsonEncode(<String, String>{
-      'code': roomCode,
-    }),
-  );
+Future<void> enterRoom(
+    BuildContext context, String roomCode, String accessToken) async {
+  try {
+    final url = Uri.parse('https://api.gifthub.site/room/enter');
+    final response = await http.post(
+      url,
+      headers: <String, String>{
+        'Authorization': accessToken,
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(<String, String>{
+        'code': roomCode,
+      }),
+    );
 
-  if (response.statusCode == 200) {
-    // 성공적으로 요청이 완료되었을 경우
-    final responseData = jsonDecode(response.body);
-    print('응답 데이터: $responseData');
-    return 1;
-  } else {
-    // 요청 실패 시
-    print('서버 요청 실패: ${response.statusCode}');
-    return 0;
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body);
+      print(responseData);
+      final roomId = responseData;
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MenuCategory(roomId: roomId.toString()),
+        ),
+      );
+    } else {
+      _showSnackBar(context);
+      print('방 입장 실패. 오류 코드: ${response.statusCode}');
+    }
+  } catch (error) {
+    print(error);
   }
 }
 

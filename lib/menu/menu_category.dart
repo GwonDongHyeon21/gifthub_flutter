@@ -6,46 +6,16 @@ void main() {
   runApp(const MaterialApp(
     home: Scaffold(
       body: MenuCategory(
-        roomCode: '',
+        roomId: '',
       ),
     ),
   ));
 }
 
-/*
-Future<List<dynamic>> fetchCategories(int roomId) async {
-  final url = Uri.parse('https://api.gifthub.site/room/main/$roomId');
-
-  final headers = {
-    'Content-Type': 'application/json',
-    'Authorization':
-        'eyJhbGciOiJIUzI1NiJ9.eyJpZGVudGlmaWVyIjoiYXBwbGUwMDE5MTQuNWFjN2ExODgyZmMzNGM5ODlmNWM5NjNhZGEzYmIwNzcuMTQwMCIsImlhdCI6MTcxNjkxODYzMiwiZXhwIjoxNzE2OTIyMjMyfQ.70zbeysGO0Gfo94PyPDhw-p96ff2S69kRlUuGrw4YhE',
-  };
-
-  try {
-    final response = await http.get(url, headers: headers);
-    final utf8Body = utf8.decode(response.bodyBytes);
-
-    if (response.statusCode == 200) {
-      final decoded = jsonDecode(utf8Body);
-      if (decoded is List) {
-        return decoded;
-      } else {
-        throw Exception('Expected a list but got ${decoded.runtimeType}');
-      }
-    } else {
-      throw Exception('Failed to load categories');
-    }
-  } catch (e) {
-    throw Exception('Failed to load categories: $e');
-  }
-}
-*/
-
 class MenuCategory extends StatelessWidget {
-  const MenuCategory({Key? key, required this.roomCode}) : super(key: key);
+  const MenuCategory({Key? key, required this.roomId}) : super(key: key);
 
-  final String roomCode;
+  final String roomId;
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +34,8 @@ class MenuCategory extends StatelessWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const Settings()),
+                MaterialPageRoute(
+                    builder: (context) => Settings(roomId: roomId)),
               );
             },
             icon: const Icon(Icons.settings),
@@ -75,25 +46,27 @@ class MenuCategory extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Padding(
-              padding: const EdgeInsets.only(top: 10),
-              child: Center(
-                  child: Text(
-                roomCode, // roomCode에 해당하는 방제목 가져오기
+            padding: const EdgeInsets.only(top: 10),
+            child: Center(
+              child: Text(
+                roomId, // roomId에 해당하는 방제목 가져오기
                 style:
                     const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              ))),
+              ),
+            ),
+          ),
           Expanded(
             child: GridView.count(
               crossAxisCount: 2,
               children: [
-                _buildCategoryButton(context, '치킨:피자:햄버거'),
-                _buildCategoryButton(context, '카페:베이커리'),
-                _buildCategoryButton(context, '아이스크림:빙수'),
-                _buildCategoryButton(context, '영화관:테마파크'),
-                _buildCategoryButton(context, '중식:일식'),
-                _buildCategoryButton(context, '족발:보쌈:고기'),
-                _buildCategoryButton(context, '상품권'),
-                _buildCategoryButton(context, '기타'),
+                _buildCategoryButton(context, '치킨:피자:햄버거', '1'),
+                _buildCategoryButton(context, '카페:베이커리', '2'),
+                _buildCategoryButton(context, '아이스크림:빙수', '3'),
+                _buildCategoryButton(context, '영화관:테마파크', '4'),
+                _buildCategoryButton(context, '중식:일식', '5'),
+                _buildCategoryButton(context, '족발:보쌈:고기', '6'),
+                _buildCategoryButton(context, '상품권', '7'),
+                _buildCategoryButton(context, '기타', '8'),
               ],
             ),
           ),
@@ -102,7 +75,8 @@ class MenuCategory extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryButton(BuildContext context, String category) {
+  Widget _buildCategoryButton(
+      BuildContext context, String category, String categoryId) {
     var imagePath = 'assets/images/$category.png';
     var categoryText = category.replaceAll(':', '/');
 
@@ -130,8 +104,11 @@ class MenuCategory extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          MenuDetail(roomCode: roomCode, title: categoryText),
+                      builder: (context) => MenuDetail(
+                        roomId: roomId,
+                        categoryText: categoryText,
+                        categoryId: categoryId,
+                      ),
                     ),
                   );
                 },

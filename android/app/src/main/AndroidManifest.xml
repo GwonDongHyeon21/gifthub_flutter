@@ -1,4 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <uses-permission android:name="android.permission.INTERNET" />
+    
     <application
         android:label="gifthub_flutter"
         android:name="${applicationName}"
@@ -29,5 +32,18 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <meta-data
+            android:name="com.google.android.gms.auth.api.key"
+            android:value="189459353797-6ibrd1vic9khpnn7kuel570j24tvs5rk.apps.googleusercontent.com"/>
+
+        <activity android:name="com.google.android.gms.auth.api.signin.internal.SignInHubActivity"
+            android:excludeFromRecents="true"
+            android:exported="false" />
+        
+        <activity android:name="com.google.android.gms.auth.api.signin.internal.SignInHubActivity$AuthenticatorActivity"
+            android:excludeFromRecents="true"
+            android:exported="false" />
+    
     </application>
 </manifest>

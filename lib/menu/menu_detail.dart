@@ -9,17 +9,26 @@ import 'package:http/http.dart' as http;
 void main() {
   runApp(const MaterialApp(
     home: Scaffold(
-      body: MenuDetail(roomCode: '', title: ''),
+      body: MenuDetail(
+        roomId: '',
+        categoryText: '',
+        categoryId: '',
+      ),
     ),
   ));
 }
 
 class MenuDetail extends StatefulWidget {
-  final String roomCode;
-  final String title;
+  final String roomId;
+  final String categoryText;
+  final String categoryId;
 
-  const MenuDetail({Key? key, required this.roomCode, required this.title})
-      : super(key: key);
+  const MenuDetail({
+    Key? key,
+    required this.roomId,
+    required this.categoryText,
+    required this.categoryId,
+  }) : super(key: key);
 
   @override
   // ignore: library_private_types_in_public_api
@@ -42,8 +51,8 @@ class _MenuDetailState extends State<MenuDetail> {
       isLoading = true;
     });
     try {
-      final response = await http
-          .get(Uri.parse('https://api.gifthub.site/room/1/categories/2'));
+      final response = await http.get(Uri.parse(
+          'https://api.gifthub.site/room/${widget.roomId}/categories/${widget.categoryId}'));
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         setState(() {
@@ -105,7 +114,7 @@ class _MenuDetailState extends State<MenuDetail> {
             child: Row(
               children: [
                 Text(
-                  widget.title,
+                  widget.categoryText,
                   style: const TextStyle(
                       fontSize: 30, fontWeight: FontWeight.bold),
                 )

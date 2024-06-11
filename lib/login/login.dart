@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:gifthub_flutter/login/login_google.dart';
-import 'package:gifthub_flutter/room/room.dart';
 
 void main() {
   runApp(const LoginPage());
@@ -40,15 +39,7 @@ class LoginPage extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 25),
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const RoomPage(
-                        email: null,
-                        name: null,
-                      ),
-                    ),
-                  );
+                  //
                 },
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white,

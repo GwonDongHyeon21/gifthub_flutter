@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -9,36 +9,32 @@ import 'package:http/http.dart' as http;
 Future<void> loginWithGoogle(BuildContext context) async {
   try {
     final googleSignIn = GoogleSignIn();
+
+    await googleSignIn.signOut();
+
     final account = await googleSignIn.signIn();
 
     if (account != null) {
       final googleAuth = await account.authentication;
-      final accessToken = googleAuth.accessToken;
+      String? accessToken = googleAuth.accessToken;
 
       final response = await http.post(
         Uri.parse('https://api.gifthub.site/login/google'),
-        body: json.encode({
-          'token': accessToken,
-        }),
         headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          "token": accessToken,
+        }),
       );
 
       if (response.statusCode == 200) {
-        final userData = json.decode(response.body);
+        final responseData = json.decode(response.body);
+        final accessToken = responseData['accessToken'];
 
-        final authorizationToken = userData['Authorization'];
-        final providerAccessToken = userData['ProviderAccessToken'];
-
-        print('Authorization: $authorizationToken');
-        print('ProviderAccessToken: $providerAccessToken');
-
-        // ignore: use_build_context_synchronously
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => RoomPage(
-              name: userData['name'],
-              email: userData['email'],
+              accessToken: accessToken,
             ),
           ),
         );

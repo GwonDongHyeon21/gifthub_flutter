@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:gifthub_flutter/login/login.dart';
-import 'package:gifthub_flutter/menu/menu_category.dart';
-import 'package:provider/provider.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => AuthProvider(),
-      child: const MyApp(),
-    ),
+    const MyApp(),
   );
 }
 
@@ -17,23 +12,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Consumer<AuthProvider>(
-        builder: (context, authProvider, _) {
-          return authProvider.isLoggedIn ? const MenuCategory(roomCode: '',) : const LoginPage();
-        },
-      ),
+    return const MaterialApp(
+      home: LoginPage(),
     );
-  }
-}
-
-class AuthProvider with ChangeNotifier {
-  bool _isLoggedIn = false;
-
-  bool get isLoggedIn => _isLoggedIn;
-
-  void setLoggedIn(bool value) {
-    _isLoggedIn = value;
-    notifyListeners();
   }
 }
