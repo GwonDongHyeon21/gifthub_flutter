@@ -1,14 +1,20 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, avoid_print
 
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gifthub_flutter/login/login.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 
 class Settings extends StatelessWidget {
-  const Settings({super.key, required this.roomId});
+  const Settings({
+    super.key,
+    required this.accessToken,
+    required this.roomId,
+  });
 
+  final String accessToken;
   final String roomId;
 
   @override
@@ -29,74 +35,75 @@ class Settings extends StatelessWidget {
       ),
       body: Column(mainAxisAlignment: MainAxisAlignment.start, children: [
         SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () async {
-                final myRoomCode = await fetchMyRoomCode(roomId);
-                if (myRoomCode != null) {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) => AlertDialog(
-                      title: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            '내 방 코드',
-                            textAlign: TextAlign.center,
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            icon: const Icon(Icons.close, color: Colors.red),
-                          ),
-                        ],
-                      ),
-                      content: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            myRoomCode,
-                            style: const TextStyle(fontSize: 14),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              _copyToClipboard(myRoomCode);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    '코드가 복사되었습니다.',
-                                    style: TextStyle(color: Colors.black),
-                                  ),
-                                  backgroundColor: Colors.white,
-                                  behavior: SnackBarBehavior.floating,
-                                  duration: Duration(seconds: 1),
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () async {
+              final myRoomCode = await fetchMyRoomCode(roomId);
+              if (myRoomCode != null) {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) => AlertDialog(
+                    title: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          '내 방 코드',
+                          textAlign: TextAlign.center,
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          icon: const Icon(Icons.close, color: Colors.red),
+                        ),
+                      ],
+                    ),
+                    content: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          myRoomCode,
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            _copyToClipboard(myRoomCode);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  '코드가 복사되었습니다.',
+                                  style: TextStyle(color: Colors.black),
                                 ),
-                              );
-                            },
-                            icon: const Icon(Icons.content_copy, size: 12),
-                          ),
-                        ],
-                      ),
+                                backgroundColor: Colors.white,
+                                behavior: SnackBarBehavior.floating,
+                                duration: Duration(seconds: 1),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.content_copy, size: 12),
+                        ),
+                      ],
                     ),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('방 코드를 가져오는 데 실패했습니다.'),
-                      backgroundColor: Colors.white,
-                      behavior: SnackBarBehavior.floating,
-                      duration: Duration(seconds: 1),
-                    ),
-                  );
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.black,
-                backgroundColor: Colors.white,
-              ),
-              child: const Text('내가 만든 방 코드 보기'),
-            )),
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('방 코드를 가져오는 데 실패했습니다.'),
+                    backgroundColor: Colors.white,
+                    behavior: SnackBarBehavior.floating,
+                    duration: Duration(seconds: 1),
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.black,
+              backgroundColor: Colors.white,
+            ),
+            child: const Text('내가 만든 방 코드 보기'),
+          ),
+        ),
         const SizedBox(
           height: 5,
         ),
@@ -163,7 +170,7 @@ class Settings extends StatelessWidget {
                   builder: (BuildContext context) => AlertDialog(
                     title: const Text(
                       '정말 방을 나가시겠습니까?',
-                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 18),
                     ),
                     actions: [
                       Center(
@@ -174,7 +181,7 @@ class Settings extends StatelessWidget {
                                 onPressed: () => Navigator.of(context).pop(),
                                 child: const Text('취소')),
                             TextButton(
-                                onPressed: () => exitRoom(roomId),
+                                onPressed: () => exitRoom(context, roomId),
                                 child: const Text('확인')),
                           ],
                         ),
@@ -196,7 +203,25 @@ class Settings extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
-                //실행
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text(
+                        '정말 탈퇴하시겠습니까?',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                      actions: [
+                        TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('취소')),
+                        TextButton(
+                            onPressed: () => showOut(context),
+                            child: const Text('확인')),
+                      ],
+                    );
+                  },
+                );
               },
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.black,
@@ -211,7 +236,36 @@ class Settings extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
-                _showLogoutDialog(context);
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text(
+                        '정말 로그아웃 하시겠습니까?',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                      actions: <Widget>[
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text('취소'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                  builder: (context) => const LoginPage()),
+                              (Route<dynamic> route) => false,
+                            );
+                          },
+                          child: const Text('확인'),
+                        ),
+                      ],
+                    );
+                  },
+                );
               },
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.black,
@@ -224,8 +278,8 @@ class Settings extends StatelessWidget {
   }
 
   Future<String?> fetchMyRoomCode(String roomId) async {
-    final url = Uri.parse('https://api.gifthub.site/room/$roomId/share');
-    final response = await http.get(url);
+    final response = await http
+        .get(Uri.parse('https://api.gifthub.site/room/$roomId/share'));
 
     if (response.statusCode == 200) {
       return response.body;
@@ -235,8 +289,8 @@ class Settings extends StatelessWidget {
   }
 
   Future<List<String>?> showUsers(String roomId) async {
-    final url = Uri.parse('https://api.gifthub.site/room/$roomId/users');
-    final response = await http.get(url);
+    final response = await http
+        .get(Uri.parse('https://api.gifthub.site/room/$roomId/users'));
 
     if (response.statusCode == 200) {
       final List<dynamic> usersJson = jsonDecode(response.body);
@@ -248,60 +302,66 @@ class Settings extends StatelessWidget {
     }
   }
 
-  Future<bool> exitRoom(String roomId) async {
-    final url = Uri.parse('https://api.gifthub.site/room/exit/$roomId');
+  Future<void> exitRoom(BuildContext context, String roomId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://api.gifthub.site/room/exit/$roomId'),
+        headers: {
+          'Authorization': accessToken,
+        },
+      );
 
-    final response = await http.post(
-      url,
-      headers: <String, String>{
-        'Authorization':
-            'eyJhbGciOiJIUzI1NiJ9.eyJpZGVudGlmaWVyIjoiZ29vZ2xlMTA2MzIwODUzMTUxNzc4MDE5MzM5IiwiaWF0IjoxNzE2OTIwMTYzLCJleHAiOjE3MTY5MjM3NjN9.JPSphiColOISnRQ3zP8hJuB53tNQkTLWQ3faDmBDPLA',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      // 방 나가기 성공
-      return true;
-    } else {
-      // 방 나가기 실패
-      return false;
+      if (response.statusCode == 200) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const LoginPage(),
+          ),
+        );
+      } else {
+        print(response.statusCode);
+      }
+    } catch (error) {
+      print(error);
     }
   }
 
-  Future<void> _showLogoutDialog(BuildContext context) async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('로그아웃'),
-          content: const SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text('로그아웃 하시겠습니까?'),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('취소'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const LoginPage()),
-                  (Route<dynamic> route) => false,
-                );
-              },
-              child: const Text('로그아웃'),
-            ),
-          ],
+  Future<void> showOut(BuildContext context) async {
+    try {
+      final googleSignIn = GoogleSignIn();
+
+      await googleSignIn.signOut();
+
+      final account = await googleSignIn.signIn();
+
+      if (account != null) {
+        final googleAuth = await account.authentication;
+        String providerAccessToken = googleAuth.accessToken!;
+
+        final response = await http.delete(
+          Uri.parse('https://api.gifthub.site/revoke'),
+          headers: {
+            'Authorization': accessToken,
+          },
+          body: {
+            providerAccessToken,
+          },
         );
-      },
-    );
+
+        if (response.statusCode == 200) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const LoginPage(),
+            ),
+          );
+        } else {
+          print(response.statusCode);
+        }
+      }
+    } catch (error) {
+      print(error);
+    }
   }
 }
 

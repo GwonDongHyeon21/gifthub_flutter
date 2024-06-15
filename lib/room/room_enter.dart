@@ -57,9 +57,8 @@ void showInputRoomCode(BuildContext context, String accessToken) {
 Future<void> enterRoom(
     BuildContext context, String roomCode, String accessToken) async {
   try {
-    final url = Uri.parse('https://api.gifthub.site/room/enter');
     final response = await http.post(
-      url,
+      Uri.parse('https://api.gifthub.site/room/enter'),
       headers: <String, String>{
         'Authorization': accessToken,
         'Content-Type': 'application/json',
@@ -77,34 +76,30 @@ Future<void> enterRoom(
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => MenuCategory(roomId: roomId.toString()),
+          builder: (context) => MenuCategory(
+            accessToken: accessToken,
+            roomId: roomId.toString(),
+          ),
         ),
       );
     } else {
-      _showSnackBar(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            '없는 코드입니다.',
+            style: TextStyle(color: Colors.black),
+          ),
+          backgroundColor: Colors.white,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
       print('방 입장 실패. 오류 코드: ${response.statusCode}');
     }
   } catch (error) {
     print(error);
   }
-}
-
-void _showSnackBar(BuildContext context) {
-  final snackBar = SnackBar(
-    content: const Text(
-      '없는 코드입니다.',
-      style: TextStyle(color: Colors.black),
-    ),
-    backgroundColor: Colors.white,
-    behavior: SnackBarBehavior.floating,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(20),
-    ),
-  );
-
-  ScaffoldMessenger.of(context).showSnackBar(snackBar);
-
-  Future.delayed(const Duration(seconds: 2), () {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-  });
 }

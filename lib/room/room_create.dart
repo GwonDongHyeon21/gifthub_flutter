@@ -18,7 +18,10 @@ void showNewRoomCode(BuildContext context, String accessToken) {
 }
 
 class CreateRoomDialog extends StatefulWidget {
-  const CreateRoomDialog({super.key, required this.accessToken});
+  const CreateRoomDialog({
+    super.key,
+    required this.accessToken,
+  });
 
   final String accessToken;
 
@@ -133,7 +136,10 @@ class _CreateRoomDialogState extends State<CreateRoomDialog> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => MenuCategory(roomId: roomId!.toString()),
+            builder: (context) => MenuCategory(
+              accessToken: widget.accessToken,
+              roomId: roomId.toString(),
+            ),
           ),
         );
       } else {

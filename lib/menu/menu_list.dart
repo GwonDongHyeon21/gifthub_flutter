@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, avoid_print
 
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -6,29 +6,19 @@ import 'package:gifthub_flutter/menu/ocr.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 
-void main() {
-  runApp(const MaterialApp(
-    home: Scaffold(
-      body: MenuDetail(
-        roomId: '',
-        categoryText: '',
-        categoryId: '',
-      ),
-    ),
-  ));
-}
-
 class MenuDetail extends StatefulWidget {
-  final String roomId;
-  final String categoryText;
-  final String categoryId;
-
   const MenuDetail({
     Key? key,
+    required this.accessToken,
     required this.roomId,
     required this.categoryText,
     required this.categoryId,
   }) : super(key: key);
+
+  final String accessToken;
+  final String roomId;
+  final String categoryText;
+  final String categoryId;
 
   @override
   // ignore: library_private_types_in_public_api
@@ -36,7 +26,7 @@ class MenuDetail extends StatefulWidget {
 }
 
 class _MenuDetailState extends State<MenuDetail> {
-  late List<String> imageUrls = [];
+  late List<Map<String, dynamic>> images = [];
   bool isLoading = false;
   String? selectedImageUrl;
 
@@ -56,7 +46,12 @@ class _MenuDetailState extends State<MenuDetail> {
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         setState(() {
-          imageUrls = data.map((item) => item['url']).cast<String>().toList();
+          images = data
+              .map((item) => {
+                    'url': item['url'],
+                    'id': item['id'],
+                  })
+              .toList();
           isLoading = false;
         });
       } else {
@@ -96,7 +91,12 @@ class _MenuDetailState extends State<MenuDetail> {
                             borderRadius: BorderRadius.circular(15.0)),
                         content: SizedBox(
                           height: 550,
-                          child: OCR(imagePath: pickedFile.path),
+                          child: OCR(
+                            accessToken: widget.accessToken,
+                            roomId: widget.roomId,
+                            categoryId: widget.categoryId,
+                            imagePath: pickedFile.path,
+                          ),
                         ));
                   },
                 );
@@ -138,18 +138,19 @@ class _MenuDetailState extends State<MenuDetail> {
                 ? const Center(
                     child: CircularProgressIndicator(),
                   )
-                : imageUrls.isNotEmpty
+                : images.isNotEmpty
                     ? GridView.builder(
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
                         ),
-                        itemCount: imageUrls.length,
+                        itemCount: images.length,
                         itemBuilder: (BuildContext context, int index) {
                           return GestureDetector(
                             onTap: () {
                               setState(() {
-                                _showImageDialog(imageUrls[index]);
+                                _showImageDialog(
+                                    images[index]['url'], images[index]['id']);
                               });
                             },
                             child: Padding(
@@ -157,7 +158,7 @@ class _MenuDetailState extends State<MenuDetail> {
                               child: AspectRatio(
                                 aspectRatio: 3 / 12,
                                 child: Image.network(
-                                  imageUrls[index],
+                                  images[index]['url']!,
                                   fit: BoxFit.cover,
                                 ),
                               ),
@@ -174,7 +175,7 @@ class _MenuDetailState extends State<MenuDetail> {
     );
   }
 
-  void _showImageDialog(String imageUrl) {
+  void _showImageDialog(String imageUrl, String imageId) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -182,11 +183,23 @@ class _MenuDetailState extends State<MenuDetail> {
           child: GestureDetector(
             onHorizontalDragEnd: (details) {
               if (details.primaryVelocity! > 0) {
-                // Swipe right, delete the image
-                setState(() {
-                  imageUrls.remove(imageUrl);
-                });
-                Navigator.of(context).pop();
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text('정말 삭제하시겠습니까?'),
+                      actions: [
+                        TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('취소')),
+                        TextButton(
+                            onPressed: () => deleteImage(
+                                widget.roomId, widget.categoryId, imageId),
+                            child: const Text('확인')),
+                      ],
+                    );
+                  },
+                );
               }
             },
             child: Container(
@@ -203,5 +216,36 @@ class _MenuDetailState extends State<MenuDetail> {
         );
       },
     );
+  }
+
+  Future<void> deleteImage(
+      String roomId, String categoryId, String gifticonId) async {
+    try {
+      final response = await http.post(
+        Uri.parse(
+            'https://api.gifthub.site/room/$roomId/categories/$categoryId/gifticons/$gifticonId'),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              '삭제되었습니다.',
+              style: TextStyle(color: Colors.black),
+            ),
+            backgroundColor: Colors.white,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      } else {
+        print(response.statusCode);
+      }
+    } catch (error) {
+      print(error);
+    }
   }
 }

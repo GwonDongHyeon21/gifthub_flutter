@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:gifthub_flutter/menu/menu_category.dart';
 import 'package:gifthub_flutter/room/room.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
@@ -9,8 +10,6 @@ import 'package:http/http.dart' as http;
 Future<void> loginWithGoogle(BuildContext context) async {
   try {
     final googleSignIn = GoogleSignIn();
-
-    await googleSignIn.signOut();
 
     final account = await googleSignIn.signIn();
 
@@ -29,15 +28,28 @@ Future<void> loginWithGoogle(BuildContext context) async {
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         final accessToken = responseData['accessToken'];
+        final roomId = responseData['room_id'];
 
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => RoomPage(
-              accessToken: accessToken,
+        if (roomId == null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => RoomPage(
+                accessToken: accessToken,
+              ),
             ),
-          ),
-        );
+          );
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MenuCategory(
+                accessToken: accessToken,
+                roomId: roomId.toString(),
+              ),
+            ),
+          );
+        }
       } else {
         print('Failed to fetch user data: ${response.statusCode}');
       }

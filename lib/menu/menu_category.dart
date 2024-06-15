@@ -1,21 +1,49 @@
-import 'package:flutter/material.dart';
-import 'package:gifthub_flutter/menu/menu_detail.dart';
-import 'package:gifthub_flutter/room/room_settings.dart';
+// ignore_for_file: avoid_print, library_private_types_in_public_api
 
-void main() {
-  runApp(const MaterialApp(
-    home: Scaffold(
-      body: MenuCategory(
-        roomId: '',
-      ),
-    ),
-  ));
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:gifthub_flutter/menu/menu_list.dart';
+import 'package:gifthub_flutter/room/room_settings.dart';
+import 'package:http/http.dart' as http;
+
+class MenuCategory extends StatefulWidget {
+  const MenuCategory({
+    Key? key,
+    required this.accessToken,
+    required this.roomId,
+  }) : super(key: key);
+
+  final String accessToken;
+  final String roomId;
+
+  @override
+  _MenuCategoryState createState() => _MenuCategoryState();
 }
 
-class MenuCategory extends StatelessWidget {
-  const MenuCategory({Key? key, required this.roomId}) : super(key: key);
+class _MenuCategoryState extends State<MenuCategory> {
+  String? roomTitle;
 
-  final String roomId;
+  @override
+  void initState() {
+    super.initState();
+    _fetchRoomTitle();
+  }
+
+  Future<void> _fetchRoomTitle() async {
+    try {
+      final response = await http.get(
+          Uri.parse('https://api.gifthub.site/room/main/${widget.roomId}'));
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        setState(() {
+          roomTitle = responseData['title'];
+        });
+      }
+    } catch (error) {
+      print(error);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +63,11 @@ class MenuCategory extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => Settings(roomId: roomId)),
+                  builder: (context) => Settings(
+                    accessToken: widget.accessToken,
+                    roomId: widget.roomId,
+                  ),
+                ),
               );
             },
             icon: const Icon(Icons.settings),
@@ -49,7 +81,7 @@ class MenuCategory extends StatelessWidget {
             padding: const EdgeInsets.only(top: 10),
             child: Center(
               child: Text(
-                roomId, // roomId에 해당하는 방제목 가져오기
+                roomTitle ?? '',
                 style:
                     const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
@@ -105,7 +137,8 @@ class MenuCategory extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => MenuDetail(
-                        roomId: roomId,
+                        accessToken: widget.accessToken,
+                        roomId: widget.roomId,
                         categoryText: categoryText,
                         categoryId: categoryId,
                       ),

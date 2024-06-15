@@ -1,14 +1,32 @@
-// ignore_for_file: use_build_context_synchronously, avoid_print
+// ignore_for_file: use_build_context_synchronously, avoid_print, library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
 import 'package:gifthub_flutter/login/login_google.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
-void main() {
-  runApp(const LoginPage());
+class LoginPage extends StatefulWidget {
+  const LoginPage({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  _LoginPage createState() => _LoginPage();
 }
 
-class LoginPage extends StatelessWidget {
-  const LoginPage({Key? key}) : super(key: key);
+class _LoginPage extends State<LoginPage> {
+  String? roomTitle;
+
+  @override
+  void initState() {
+    super.initState();
+    logOut();
+  }
+
+  Future<void> logOut() async {
+    final googleSignIn = GoogleSignIn();
+
+    await googleSignIn.signOut();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,21 +43,32 @@ class LoginPage extends StatelessWidget {
               ),
             ),
             Padding(
-                padding: const EdgeInsets.only(bottom: 30),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(30),
-                  child: Image.asset(
-                    'assets/images/gifthub.png',
-                    height: 350,
-                    width: 350,
-                    fit: BoxFit.cover,
-                  ),
-                )),
+              padding: const EdgeInsets.only(bottom: 30),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(30),
+                child: Image.asset(
+                  'assets/images/gifthub.png',
+                  height: 350,
+                  width: 350,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.only(bottom: 25),
               child: ElevatedButton(
                 onPressed: () {
-                  //
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        '애플 로그인을 할 수 없습니다.',
+                        style: TextStyle(color: Colors.black),
+                      ),
+                      backgroundColor: Color.fromARGB(255, 200, 200, 200),
+                      behavior: SnackBarBehavior.floating,
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white,

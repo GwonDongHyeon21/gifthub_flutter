@@ -1,14 +1,24 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously, library_private_types_in_public_api
 
-import 'package:flutter/material.dart';
-import 'dart:convert';
 import 'dart:io';
+import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
 class OCR extends StatefulWidget {
-  final String imagePath;
+  const OCR({
+    Key? key,
+    required this.accessToken,
+    required this.roomId,
+    required this.categoryId,
+    required this.imagePath,
+  }) : super(key: key);
 
-  const OCR({Key? key, required this.imagePath}) : super(key: key);
+  final String accessToken;
+  final String roomId;
+  final String categoryId;
+  final String imagePath;
 
   @override
   _OCRState createState() => _OCRState();
@@ -23,14 +33,14 @@ class _OCRState extends State<OCR> {
     var bytes = File(widget.imagePath).readAsBytesSync();
     String img64 = base64Encode(bytes);
 
-    var url = 'https://api.ocr.space/parse/image';
-    var payload = {
-      "base64Image": "data:image/jpg;base64,${img64.toString()}",
-      "language": "kor"
-    };
-    var header = {"apikey": "K84813047988957"};
-
-    var post = await http.post(Uri.parse(url), body: payload, headers: header);
+    var post = await http.post(
+      Uri.parse('https://api.ocr.space/parse/image'),
+      body: {
+        "base64Image": "data:image/jpg;base64,${img64.toString()}",
+        "language": "kor"
+      },
+      headers: {"apikey": "K84813047988957"},
+    );
     var result = jsonDecode(post.body);
 
     setState(() {
@@ -184,13 +194,21 @@ class _OCRState extends State<OCR> {
 
   Future<void> uploadImage(
       File imageFile, String barcode, String expireDate) async {
+    var formattedBarcode = barcode.replaceAll(' ', '');
+    var formattedExpireDate = expireDate
+        .replaceAll('년 ', '-')
+        .replaceAll('월 ', '-')
+        .replaceAll('일', '');
     var request = http.MultipartRequest(
-        'POST', Uri.parse('https://api.gifthub.site/room/1/categories/2'));
-    request.files
-        .add(await http.MultipartFile.fromPath('image', imageFile.path));
+        'POST',
+        Uri.parse(
+            'https://api.gifthub.site/room/${widget.roomId}/categories/${widget.categoryId}'));
+    request.headers['Authorization'] = widget.accessToken;
+    request.files.add(await http.MultipartFile.fromPath('image', imageFile.path,
+        contentType: MediaType('image', 'jpeg')));
     request.fields['imageOcrDTO'] = jsonEncode({
-      "barcode": barcode,
-      "expire": expireDate,
+      "barcode": formattedBarcode,
+      "expire": formattedExpireDate,
     });
 
     var res = await request.send();
