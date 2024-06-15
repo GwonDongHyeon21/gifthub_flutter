@@ -241,6 +241,7 @@ class _MenuDetailState extends State<MenuDetail> {
             duration: const Duration(seconds: 2),
           ),
         );
+        fetchImageUrls();
       } else {
         print(response.statusCode);
       }
