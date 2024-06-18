@@ -33,136 +33,138 @@ class Settings extends StatelessWidget {
         ),
         title: const Text('설정'),
       ),
-      body: Column(mainAxisAlignment: MainAxisAlignment.start, children: [
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: () async {
-              final myRoomCode = await fetchMyRoomCode(roomId);
-              if (myRoomCode != null) {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) => AlertDialog(
-                    title: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          '내 방 코드',
-                          textAlign: TextAlign.center,
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          icon: const Icon(Icons.close, color: Colors.red),
-                        ),
-                      ],
-                    ),
-                    content: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          myRoomCode,
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            _copyToClipboard(myRoomCode);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  '코드가 복사되었습니다.',
-                                  style: TextStyle(color: Colors.black),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 5, left: 5, right: 5),
+            child: ElevatedButton(
+              onPressed: () async {
+                final myRoomCode = await fetchMyRoomCode(roomId);
+                if (myRoomCode != null) {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) => AlertDialog(
+                      title: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            '내 방 코드',
+                            textAlign: TextAlign.center,
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            icon: const Icon(Icons.close, color: Colors.red),
+                          ),
+                        ],
+                      ),
+                      content: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            myRoomCode,
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              _copyToClipboard(myRoomCode);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    '코드가 복사되었습니다.',
+                                    style: TextStyle(color: Colors.black),
+                                  ),
+                                  backgroundColor: Colors.white,
+                                  behavior: SnackBarBehavior.floating,
+                                  duration: Duration(seconds: 1),
                                 ),
-                                backgroundColor: Colors.white,
-                                behavior: SnackBarBehavior.floating,
-                                duration: Duration(seconds: 1),
-                              ),
-                            );
-                          },
-                          icon: const Icon(Icons.content_copy, size: 12),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('방 코드를 가져오는 데 실패했습니다.'),
-                    backgroundColor: Colors.white,
-                    behavior: SnackBarBehavior.floating,
-                    duration: Duration(seconds: 1),
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.black,
-              backgroundColor: Colors.white,
-            ),
-            child: const Text('내가 만든 방 코드 보기'),
-          ),
-        ),
-        const SizedBox(
-          height: 5,
-        ),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: () async {
-              final users = await showUsers(roomId);
-              if (users != null) {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) => AlertDialog(
-                    title: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          '현재 방 참여자',
-                          textAlign: TextAlign.center,
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          icon: const Icon(Icons.close, color: Colors.red),
-                        ),
-                      ],
-                    ),
-                    content: SingleChildScrollView(
-                      child: Column(
-                        children: users
-                            .map((user) => ListTile(title: Text(user)))
-                            .toList(),
+                              );
+                            },
+                            icon: const Icon(Icons.content_copy, size: 12),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('방 참여자 정보를 가져오는 데 실패했습니다.'),
-                    backgroundColor: Colors.white,
-                    behavior: SnackBarBehavior.floating,
-                    duration: Duration(seconds: 1),
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.black,
-              backgroundColor: Colors.white,
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('방 코드를 가져오는 데 실패했습니다.'),
+                      backgroundColor: Colors.white,
+                      behavior: SnackBarBehavior.floating,
+                      duration: Duration(seconds: 1),
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.black,
+                backgroundColor: Colors.white,
+              ),
+              child: const Align(
+                alignment: Alignment.centerLeft,
+                child: Text('내가 만든 방 코드 보기'),
+              ),
             ),
-            child: const Text('현재 방 참여자 보기'),
           ),
-        ),
-        const SizedBox(
-          height: 5,
-        ),
-        SizedBox(
-            width: double.infinity,
+          Padding(
+            padding: const EdgeInsets.only(left: 5, right: 5),
+            child: ElevatedButton(
+              onPressed: () async {
+                final users = await showUsers(roomId);
+                if (users != null) {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) => AlertDialog(
+                      title: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            '현재 방 참여자',
+                            textAlign: TextAlign.center,
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            icon: const Icon(Icons.close, color: Colors.red),
+                          ),
+                        ],
+                      ),
+                      content: SingleChildScrollView(
+                        child: Column(
+                          children: users
+                              .map((user) => ListTile(title: Text(user)))
+                              .toList(),
+                        ),
+                      ),
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('방 참여자 정보를 가져오는 데 실패했습니다.'),
+                      backgroundColor: Colors.white,
+                      behavior: SnackBarBehavior.floating,
+                      duration: Duration(seconds: 1),
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.black,
+                backgroundColor: Colors.white,
+              ),
+              child: const Align(
+                alignment: Alignment.centerLeft,
+                child: Text('현재 방 참여자 보기'),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 5, right: 5),
             child: ElevatedButton(
               onPressed: () {
                 showDialog(
@@ -194,13 +196,14 @@ class Settings extends StatelessWidget {
                 foregroundColor: Colors.black,
                 backgroundColor: Colors.white,
               ),
-              child: const Text('방 나가기'),
-            )),
-        const SizedBox(
-          height: 5,
-        ),
-        SizedBox(
-            width: double.infinity,
+              child: const Align(
+                alignment: Alignment.centerLeft,
+                child: Text('방 나가기'),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 5, right: 5),
             child: ElevatedButton(
               onPressed: () {
                 showDialog(
@@ -227,13 +230,14 @@ class Settings extends StatelessWidget {
                 foregroundColor: Colors.black,
                 backgroundColor: Colors.white,
               ),
-              child: const Text('회원탈퇴'),
-            )),
-        const SizedBox(
-          height: 5,
-        ),
-        SizedBox(
-            width: double.infinity,
+              child: const Align(
+                alignment: Alignment.centerLeft,
+                child: Text('회원탈퇴'),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 5, right: 5),
             child: ElevatedButton(
               onPressed: () {
                 showDialog(
@@ -254,10 +258,12 @@ class Settings extends StatelessWidget {
                         ),
                         TextButton(
                           onPressed: () {
-                            Navigator.of(context).pushAndRemoveUntil(
+                            Navigator.pushAndRemoveUntil(
+                              context,
                               MaterialPageRoute(
-                                  builder: (context) => const LoginPage()),
-                              (Route<dynamic> route) => false,
+                                builder: (context) => const LoginPage(),
+                              ),
+                              (route) => false,
                             );
                           },
                           child: const Text('확인'),
@@ -271,9 +277,14 @@ class Settings extends StatelessWidget {
                 foregroundColor: Colors.black,
                 backgroundColor: Colors.white,
               ),
-              child: const Text('로그아웃'),
-            )),
-      ]),
+              child: const Align(
+                alignment: Alignment.centerLeft,
+                child: Text('로그아웃'),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -312,11 +323,12 @@ class Settings extends StatelessWidget {
       );
 
       if (response.statusCode == 200) {
-        Navigator.push(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
             builder: (context) => const LoginPage(),
           ),
+          (route) => false,
         );
       } else {
         print(response.statusCode);
@@ -336,15 +348,11 @@ class Settings extends StatelessWidget {
 
       if (account != null) {
         final googleAuth = await account.authentication;
-        String providerAccessToken = googleAuth.accessToken!;
 
         final response = await http.delete(
           Uri.parse('https://api.gifthub.site/revoke'),
           headers: {
-            'Authorization': accessToken,
-          },
-          body: {
-            providerAccessToken,
+            'Authorization': googleAuth.accessToken!,
           },
         );
 

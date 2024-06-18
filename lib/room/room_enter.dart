@@ -59,21 +59,22 @@ Future<void> enterRoom(
   try {
     final response = await http.post(
       Uri.parse('https://api.gifthub.site/room/enter'),
-      headers: <String, String>{
+      headers: {
         'Authorization': accessToken,
         'Content-Type': 'application/json',
       },
-      body: jsonEncode(<String, String>{
+      body: json.encode({
         'code': roomCode,
       }),
     );
 
+    print(response.statusCode);
     if (response.statusCode == 200) {
       final responseData = json.decode(response.body);
-      print(responseData);
-      final roomId = responseData;
+      final roomId = responseData.toString();
+      print(roomId);
 
-      Navigator.push(
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
           builder: (context) => MenuCategory(
@@ -81,6 +82,7 @@ Future<void> enterRoom(
             roomId: roomId.toString(),
           ),
         ),
+        (route) => false,
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

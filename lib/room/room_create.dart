@@ -32,7 +32,6 @@ class CreateRoomDialog extends StatefulWidget {
 class _CreateRoomDialogState extends State<CreateRoomDialog> {
   final TextEditingController titleController = TextEditingController();
   String? roomId;
-  bool isRoomCreated = false;
 
   void _copyToClipboard(String roomCode) {
     Clipboard.setData(ClipboardData(text: roomCode));
@@ -109,7 +108,7 @@ class _CreateRoomDialogState extends State<CreateRoomDialog> {
               foregroundColor: Colors.black,
               backgroundColor: const Color(0xFFDBD6F3),
             ),
-            child: Text(isRoomCreated ? '완료' : '제작'),
+            child: const Text('제작'),
           ),
         ],
       ),
@@ -133,7 +132,7 @@ class _CreateRoomDialogState extends State<CreateRoomDialog> {
         final responseData = json.decode(response.body);
         final roomId = responseData['room_id'];
 
-        Navigator.push(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
             builder: (context) => MenuCategory(
@@ -141,6 +140,7 @@ class _CreateRoomDialogState extends State<CreateRoomDialog> {
               roomId: roomId.toString(),
             ),
           ),
+          (route) => false,
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

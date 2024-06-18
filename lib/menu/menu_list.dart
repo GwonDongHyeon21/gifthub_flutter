@@ -87,19 +87,20 @@ class _MenuDetailState extends State<MenuDetail> {
                   context: context,
                   builder: (BuildContext context) {
                     return AlertDialog(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15.0)),
-                        content: SizedBox(
-                          height: 550,
-                          child: OCR(
-                            accessToken: widget.accessToken,
-                            roomId: widget.roomId,
-                            categoryId: widget.categoryId,
-                            imagePath: pickedFile.path,
-                          ),
-                        ));
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15.0)),
+                      content: SizedBox(
+                        height: 550,
+                        child: OCR(
+                          accessToken: widget.accessToken,
+                          roomId: widget.roomId,
+                          categoryId: widget.categoryId,
+                          imagePath: pickedFile.path,
+                        ),
+                      ),
+                    );
                   },
-                );
+                ).then((value) => fetchImageUrls());
               }
             },
             icon: const Icon(Icons.add),
@@ -150,7 +151,9 @@ class _MenuDetailState extends State<MenuDetail> {
                             onTap: () {
                               setState(() {
                                 _showImageDialog(
-                                    images[index]['url'], images[index]['id']);
+                                  images[index]['url'].toString(),
+                                  images[index]['id'].toString(),
+                                );
                               });
                             },
                             child: Padding(
@@ -180,35 +183,34 @@ class _MenuDetailState extends State<MenuDetail> {
       context: context,
       builder: (BuildContext context) {
         return Dialog(
-          child: GestureDetector(
-            onHorizontalDragEnd: (details) {
-              if (details.primaryVelocity! > 0) {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: const Text('정말 삭제하시겠습니까?'),
-                      actions: [
-                        TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: const Text('취소')),
-                        TextButton(
-                            onPressed: () => deleteImage(
-                                widget.roomId, widget.categoryId, imageId),
-                            child: const Text('확인')),
-                      ],
-                    );
-                  },
-                );
-              }
+          child: Dismissible(
+            key: Key(imageId),
+            direction: DismissDirection.endToStart,
+            onDismissed: (direction) {
+              deleteImage(widget.roomId, widget.categoryId, imageId);
             },
-            child: Container(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: NetworkImage(imageUrl),
-                  fit: BoxFit.contain,
+            background: Container(
+              color: Colors.grey,
+              child: const Align(
+                alignment: Alignment.centerRight,
+                child: Padding(
+                  padding: EdgeInsets.only(right: 20.0),
+                  child: Icon(
+                    Icons.delete,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            child: GestureDetector(
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: NetworkImage(imageUrl),
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
             ),
@@ -221,7 +223,7 @@ class _MenuDetailState extends State<MenuDetail> {
   Future<void> deleteImage(
       String roomId, String categoryId, String gifticonId) async {
     try {
-      final response = await http.post(
+      final response = await http.delete(
         Uri.parse(
             'https://api.gifthub.site/room/$roomId/categories/$categoryId/gifticons/$gifticonId'),
       );
@@ -241,7 +243,8 @@ class _MenuDetailState extends State<MenuDetail> {
             duration: const Duration(seconds: 2),
           ),
         );
-        fetchImageUrls();
+        await fetchImageUrls();
+        Navigator.pop(context);
       } else {
         print(response.statusCode);
       }

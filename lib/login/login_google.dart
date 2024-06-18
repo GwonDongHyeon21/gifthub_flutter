@@ -31,16 +31,17 @@ Future<void> loginWithGoogle(BuildContext context) async {
         final roomId = responseData['room_id'];
 
         if (roomId == null) {
-          Navigator.push(
+          Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
               builder: (context) => RoomPage(
                 accessToken: accessToken,
               ),
             ),
+            (route) => false,
           );
         } else {
-          Navigator.push(
+          Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
               builder: (context) => MenuCategory(
@@ -48,6 +49,7 @@ Future<void> loginWithGoogle(BuildContext context) async {
                 roomId: roomId.toString(),
               ),
             ),
+            (route) => false,
           );
         }
       } else {

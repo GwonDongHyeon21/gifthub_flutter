@@ -51,6 +51,7 @@ class _AuthCheckState extends State<AuthCheck> {
       if (user != null) {
         final auth = await user.authentication;
         accessToken = auth.accessToken;
+        print(accessToken);
         if (accessToken != null) {
           await setUp(accessToken!);
           setState(() {
